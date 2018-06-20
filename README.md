@@ -35,7 +35,7 @@ To download and unzip the required datasets, change to the data folder and run
  $ cd data; python download_data.py
  ```
 
-To preprocess the image data and text data the following commands can be executed respectively. Setting the data variable to trainval or test for preprocess_image.py and train, val or test for preprocess_text.py depending on which dataset you want to preprocess
+To preprocess the image data and text data the following commands can be executed respectively. (Setting the data variable to trainval or test for preprocess_image.py and train, val or test for preprocess_text.py depending on which dataset you want to preprocess)
 ```
 $ python preprocess_image.py --data trainval; python preprocess_text.py --data train
 ```
