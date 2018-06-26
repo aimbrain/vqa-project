@@ -425,11 +425,8 @@ def trainval(args):
              # Do model forward
             output, adjacency_matrix = net(
                 q_batch, i_batch, k_batch, qlen_batch)
-            if args.soft_targets:
-                loss = criterion(output, a_batch)
-            else:
-                _, hard_targets = a_batch.max(1)
-                loss = criterion(output, hard_targets)
+            
+            loss = criterion(output, a_batch)
  
             # compute accuracy based on vqa evaluation
             correct = total_vqa_score(output, vote_batch)
