@@ -64,7 +64,7 @@ class VQA_Dataset(Dataset):
         self.bbox = zarr.open(os.path.join(
             data_dir, 'trainval_boxes.zarr'), mode='r')
         self.sizes = pd.read_csv(os.path.join(
-            data_dir, 'image_size.csv'))
+            data_dir, 'trainval_image_size.csv'))
 
         # Load questions
         if train:

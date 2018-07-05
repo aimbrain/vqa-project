@@ -47,8 +47,7 @@ def total_vqa_score(output_batch, n_votes_batch):
 
     vqa_score = 0
     _, oix = output_batch.data.max(1)
-    aix = (n_votes_batch.data > 0.0).nonzero()
-    for answer in aix:
-        if answer[1] == oix[answer[0]]:
-            vqa_score += min(float(n_votes_batch[answer[0]][answer[1]].cpu().data.numpy()/3), 1)
+    for i, pred in enumerate(oix):
+        count = n_votes_batch[i,pred]
+        vqa_score += min(count.data.cpu().numpy()[0], 1)
     return vqa_score

@@ -160,14 +160,15 @@ class GraphLearner(Module):
         self.K = K
 
         # Embedding layers
-        self.edge_layer_1 = nn.Linear(in_feature_dim, combined_feature_dim)
-        self.edge_layer_2 = nn.Linear(
-            combined_feature_dim, combined_feature_dim)
+        self.edge_layer_1 = nn.Linear(in_feature_dim, 
+                                      combined_feature_dim)
+        self.edge_layer_2 = nn.Linear(combined_feature_dim, 
+                                      combined_feature_dim)
 
         # Regularisation
         self.dropout = nn.Dropout(p=dropout)
-        self.bn_1 = nn.BatchNorm1d(combined_feature_dim)
-        self.bn_2 = nn.BatchNorm1d(combined_feature_dim)
+        self.edge_layer_1 = nn.utils.weight_norm(self.edge_layer_1)
+        self.edge_layer_2 = nn.utils.weight_norm(self.edge_layer_2)
 
     def forward(self, graph_nodes):
         '''
@@ -181,12 +182,10 @@ class GraphLearner(Module):
 
         # layer 1
         h = self.edge_layer_1(graph_nodes)
-        h = self.bn_1(h)
         h = F.relu(h)
 
         # layer 2
         h = self.edge_layer_2(h)
-        h = self.bn_2(h)
         h = F.relu(h)
 
         # outer product
@@ -194,3 +193,4 @@ class GraphLearner(Module):
         adjacency_matrix = torch.matmul(h, h.transpose(1, 2))
 
         return adjacency_matrix
+

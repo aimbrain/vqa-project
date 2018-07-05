@@ -258,7 +258,7 @@ def train(args):
 
                 net = nn.DataParallel(model.train(True))
                 acc = test_correct/(10*args.bsize)*100
-                print("Validation accuracy: {} %".format(acc))
+                print("Validation accuracy: {:.2f} %".format(acc))
 
         # save model and compute accuracy for epoch
         epoch_loss = ep_loss / n_batches
