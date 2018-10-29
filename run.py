@@ -80,9 +80,7 @@ def eval_model(args):
     # Restore pre-trained model
     ckpt = torch.load(args.model_path)
     model.load_state_dict(ckpt['state_dict'])
-
-    # parallelise across CUDA devices
-    net = nn.DataParallel(model.train(False))
+    model.train(False)
 
     # Compute accuracy
     result = []
@@ -93,7 +91,7 @@ def eval_model(args):
             batch_to_cuda(next_batch, volatile=True)
 
         # get predictions
-        output, _ = net(q_batch, i_batch, k_batch, qlen_batch)
+        output, _ = model(q_batch, i_batch, k_batch, qlen_batch)
         qid_batch = next_batch[3]
         _, oix = output.data.max(1)
         # record predictions
@@ -188,9 +186,6 @@ def train(args):
     scheduler = MultiStepLR(optimizer, milestones=[30], gamma=0.5)
     scheduler.last_epoch = start_ep - 1
 
-    # Split incoming data across gpus
-    net = nn.DataParallel(model.train(True))
-
     # Train iterations
     print('Start training.')
     for ep in range(start_ep, start_ep+args.ep):
@@ -210,7 +205,7 @@ def train(args):
                 batch_to_cuda(next_batch)
 
             # forward pass
-            output, adjacency_matrix = net(
+            output, adjacency_matrix = model(
                 q_batch, i_batch, k_batch, qlen_batch)
 
             loss = criterion(output, a_batch)
@@ -247,16 +242,16 @@ def train(args):
 
                 # compute validation accuracy over a small subset of the validation set
                 test_correct = 0
-                net = nn.DataParallel(model.train(False))
+                model.train(False)
 
                 for i in range(10):
                     test_batch = next(loader_test)
                     q_batch, a_batch, vote_batch, i_batch, k_batch, qlen_batch = \
                         batch_to_cuda(test_batch, volatile=True)
-                    output, _ = net(q_batch, i_batch, k_batch, qlen_batch)
+                    output, _ = model(q_batch, i_batch, k_batch, qlen_batch)
                     test_correct += total_vqa_score(output, vote_batch)
 
-                net = nn.DataParallel(model.train(True))
+                model.train(True)
                 acc = test_correct/(10*args.bsize)*100
                 print("Validation accuracy: {:.2f} %".format(acc))
 
@@ -318,9 +313,7 @@ def test(args):
     # Restore pre-trained model
     ckpt = torch.load(args.model_path)
     model.load_state_dict(ckpt['state_dict'])
- 
-    # parallelise across CUDA devices
-    net = nn.DataParallel(model.train(False))
+    model.train(False)
 
     result = []
     for step, next_batch in tqdm(enumerate(loader)):
@@ -329,7 +322,7 @@ def test(args):
             batch_to_cuda(next_batch, volatile=True)
  
         # get predictions
-        output, _ = net(q_batch, i_batch, k_batch, qlen_batch)
+        output, _ = model(q_batch, i_batch, k_batch, qlen_batch)
         qid_batch = next_batch[3]
         _, oix = output.data.max(1)
         # record predictions
@@ -404,9 +397,6 @@ def trainval(args):
     scheduler = MultiStepLR(optimizer, milestones=[30], gamma=0.5)
     scheduler.last_epoch = start_ep - 1
  
-    # split incoming data across gpus
-    net = nn.DataParallel(model.train(True))
- 
     # Training script
     print ('Start training.')
     for ep in range(start_ep, start_ep+args.ep):
@@ -423,7 +413,7 @@ def trainval(args):
                 batch_to_cuda(next_batch)
 
              # Do model forward
-            output, adjacency_matrix = net(
+            output, adjacency_matrix = model(
                 q_batch, i_batch, k_batch, qlen_batch)
             
             loss = criterion(output, a_batch)
@@ -493,7 +483,7 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', metavar='', type=float, default=0.5,
                         help='probability of dropping out FC nodes during training')
     parser.add_argument('--model_path', metavar='', type=str,
-                        default='.', help='trained model path.')
+                        help='trained model path.')
     args, unparsed = parser.parse_known_args()
     if len(unparsed) != 0:
         raise SystemExit('Unknown argument: {}'.format(unparsed))
