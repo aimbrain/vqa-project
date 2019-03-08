@@ -16,17 +16,17 @@ import os
 
 # download input questions (training, validation and test sets)
 os.system(
-    'wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Train_mscoco.zip -P zip/')
+    'wget https://s3.amazonaws.com/cvmlp/vqa/mscoco/vqa/v2_Questions_Train_mscoco.zip -P zip/')
 os.system(
-    'wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Val_mscoco.zip -P zip/')
+    'wget https://s3.amazonaws.com/cvmlp/vqa/mscoco/vqa/v2_Questions_Val_mscoco.zip -P zip/')
 os.system(
-    'wget http://visualqa.org/data/mscoco/vqa/v2_Questions_Test_mscoco.zip -P zip/')
+    'wget https://s3.amazonaws.com/cvmlp/vqa/mscoco/vqa/v2_Questions_Test_mscoco.zip -P zip/')
 
 # download annotations (training and validation sets)
 os.system(
-    'wget http://visualqa.org/data/mscoco/vqa/v2_Annotations_Train_mscoco.zip -P zip/')
+    'wget https://s3.amazonaws.com/cvmlp/vqa/mscoco/vqa/v2_Annotations_Train_mscoco.zip -P zip/')
 os.system(
-    'wget http://visualqa.org/data/mscoco/vqa/v2_Annotations_Val_mscoco.zip -P zip/')
+    'wget https://s3.amazonaws.com/cvmlp/vqa/mscoco/vqa/v2_Annotations_Val_mscoco.zip -P zip/')
 
 # download pre-trained glove embeddings
 os.system('wget http://nlp.stanford.edu/data/glove.6B.zip -P zip/')
@@ -43,5 +43,6 @@ os.system('unzip zip/v2_Questions_Val_mscoco.zip -d raw/')
 os.system('unzip zip/v2_Questions_Test_mscoco.zip -d raw/')
 os.system('unzip zip/v2_Annotations_Train_mscoco.zip -d raw/')
 os.system('unzip zip/v2_Annotations_Val_mscoco.zip -d raw/')
-os.system('unzip zip/glove.6B.zip -d data/')
+os.system('unzip zip/glove.6B.zip -d ./')
 os.system('unzip zip/trainval_36.zip -d raw/')
+os.system('unzip zip/test2015_36.zip -d raw/')

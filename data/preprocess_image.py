@@ -46,14 +46,16 @@ def features_to_zarr(phase):
     else:
         raise SystemExit('Unrecognised phase')
 
-    # Read the tsv and load data in a dictionary
-    in_data = {}
+    # Read the tsv and append to files
+    boxes = zarr.open_group(phase + '_boxes.zarr', mode='w')
+    features = zarr.open_group(phase + '.zarr', mode='w')
+    image_size = {}
     for infile in infiles:
-        print(infile)
         with open(infile, "r") as tsv_in_file:
             reader = csv.DictReader(
                 tsv_in_file, delimiter='\t', fieldnames=FIELDNAMES)
-            for item in reader:
+            print('Converting ' + infile + ' to zarr...')
+            for item in tqdm(reader):
                 item['image_id'] = str(item['image_id'])
                 item['image_h'] = int(item['image_h'])
                 item['image_w'] = int(item['image_w'])
@@ -63,15 +65,24 @@ def features_to_zarr(phase):
                         item[field].encode('utf-8'))
                     item[field] = np.frombuffer(encoded_str,
                                                 dtype=np.float32).reshape((item['num_boxes'], -1))
-                in_data[item['image_id']] = item
+                # append to zarr files
+                boxes.create_dataset(item['image_id'], data=item['boxes'])
+                features.create_dataset(item['image_id'], data=item['features'])
+                # image_size dict
+                image_size[item['image_id']] = {
+                    'image_h':item['image_h'],
+                    'image_w':item['image_w'],
+                }
+
 
     # convert dict to pandas dataframe
-    train = pd.DataFrame.from_dict(in_data)
-    train = train.transpose()
+    
 
     # create image sizes csv
     print('Writing image sizes csv...')
-    d = train.to_dict()
+    df = pd.DataFrame.from_dict(image_size)
+    df = df.transpose()
+    d = df.to_dict()
     dw = d['image_w']
     dh = d['image_h']
     d = [dw, dh]
@@ -81,49 +92,11 @@ def features_to_zarr(phase):
     image_sizes = pd.DataFrame(dwh)
     image_sizes.to_csv(phase + '_image_size.csv')
 
-    # select bounding box coordinates and fill hdf5
-    h = h5py.File(phase + 'box.hdf5', mode='w')
-    t = train['boxes']
-    d = t.to_dict()
-    print('Creating bounding box file...')
-    for k, v in tqdm(d.items()):
-        h.create_dataset(str(k), data=v)
-    if h:
-        h.close()
-
-    # convert to zarr
-    print('Writing zarr file...')
-    i_feat = h5py.File(phase + 'box.hdf5', 'r', libver='latest')
-    dest = zarr.open_group(phase + '_boxes.zarr', mode='w')
-    zarr.copy_all(i_feat, dest)
-    i_feat.close()
-    dest.close()
-    os.remove(phase + 'box.hdf5')
-
-    # select features and fill hdf5
-    h = h5py.File(phase + '.hdf5', mode='w')
-    t = train['features']
-    d = t.to_dict()
-    print('Creating image features file...')
-    for k, v in tqdm(d.items()):
-        h.create_dataset(str(k), data=v)
-    if h:
-        h.close()
-
-    # convert to zarr
-    print('Writing zarr file...')
-    i_feat = h5py.File(phase + '.hdf5', 'r', libver='latest')
-    dest = zarr.open_group(phase + '.zarr', mode='w')
-    zarr.copy_all(i_feat, dest)
-    i_feat.close()
-    dest.close()
-    os.remove(phase + '.hdf5')
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         description='Preprocessing for VQA v2 image data')
-    parser.add_argument('-d', '--data', nargs='+', help='trainval, and/or test, list of data phases to be processed', required=True)
+    parser.add_argument('--data', nargs='+', help='trainval, and/or test, list of data phases to be processed', required=True)
     args, unparsed = parser.parse_known_args()
     if len(unparsed) != 0:
         raise SystemExit('Unknown argument: {}'.format(unparsed))

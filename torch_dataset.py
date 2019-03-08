@@ -110,9 +110,9 @@ class VQA_Dataset(Dataset):
     def __getitem__(self, idx):
 
         # question sample
-        q = [0] * self.seqlen
         qlen = len(self.vqa[idx]['question_toked'])
-        for i, w in enumerate(self.vqa[idx]['question_toked'][:-1]):
+        q = [0] * 100
+        for i, w in enumerate(self.vqa[idx]['question_toked']):
             try:
                 q[i] = self.q_wtoi[w]
             except:
@@ -242,9 +242,9 @@ class VQA_Dataset_Test(Dataset):
     def __getitem__(self, idx):
 
         # question sample
-        q = [0] * self.seqlen
         qlen = len(self.vqa[idx]['question_toked'])
-        for i, w in enumerate(self.vqa[idx]['question_toked'][:-1]):
+        q = [0] * 100
+        for i, w in enumerate(self.vqa[idx]['question_toked']):
             try:
                 q[i] = self.q_wtoi[w]
             except:
@@ -263,7 +263,7 @@ class VQA_Dataset_Test(Dataset):
             # return 0's for unknown test set answers
             a = 0
 
-        # soft label answers
+        # votes
         if self.train:
             n_votes = np.zeros(self.n_answers, dtype=np.float32)
             for w, c in self.vqa[idx]['answers']:
@@ -271,10 +271,9 @@ class VQA_Dataset_Test(Dataset):
                     n_votes[self.a_wtoi[w]] = c
                 except:
                     continue
-            n_votes = np.asarray(a).reshape(-1)
+            n_votes = np.asarray(n_votes).reshape(-1)
         else:
             # return 0's for unknown test set answers
-            a = 0
             n_votes = 0
 
         # id of the question

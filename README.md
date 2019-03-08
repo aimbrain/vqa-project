@@ -23,8 +23,8 @@ year = {2018}
 
 ### Requirements
 
- - [pytorch (0.2.0) (with CUDA)](https://pytorch.org/)
- - [zarr (v2.2.0rc3)](https://github.com/zarr-developers/zarr)
+ - [pytorch (0.3.1) (with CUDA)](https://pytorch.org/)
+ - [zarr (2.2.0)](https://github.com/zarr-developers/zarr)
  - [tdqm](https://github.com/tqdm/tqdm)
  - [spacy](https://spacy.io/usage/)
 
@@ -61,10 +61,8 @@ and a json of results from the test set can be produced with
  ```
 $ python run.py --test --model_path path_to_your_model
 ```
-To see a list and description of the model training parameters run
-```
-$ python run.py --help
-```
+To reproduce our results train a model on the trainval set with the default parameters,
+run the test script and evaluate the json on the [EvalAI website](https://evalai.cloudcv.org/).
 
 ## Authors
 

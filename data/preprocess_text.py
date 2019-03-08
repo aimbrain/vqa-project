@@ -98,7 +98,7 @@ def process_questions(q):
     # a 1-indexed vocab translation table
     itow = {i+1: w for i, w in enumerate(vocab)}
     wtoi = {w: i+1 for i, w in enumerate(vocab)}  # inverse table
-    pickle.dump({'itow': itow, 'wtoi': wtoi}, open('train_q_dict.p', 'wb'))
+    pickle.dump({'itow': itow, 'wtoi': wtoi}, open(phase + '_q_dict.p', 'wb'))
 
 
 def tokenize_questions(qa, phase):
@@ -138,8 +138,8 @@ def combine_qa(questions, annotations, phase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                         description='Preprocessing for VQA v2 text data')
-    parser.add_argument('-d', '--data', nargs='+', help='train, val and/or test, list of data phases to be processed', required=True)
-    parser.add_argument('--n', '--nanswers', default=3000, help='number of top answers to consider for classification.')
+    parser.add_argument('--data', nargs='+', help='train, val and/or test, list of data phases to be processed', required=True)
+    parser.add_argument('--nanswers', default=3000, help='number of top answers to consider for classification.')
     args, unparsed = parser.parse_known_args()
     if len(unparsed) != 0:
         raise SystemExit('Unknown argument: {}'.format(unparsed))
@@ -148,36 +148,31 @@ if __name__ == '__main__':
 
     for phase in phase_list:
 
-        if not os.path.exists('raw/v2_OpenEnded_mscoco_' + phase + '2014_questions.json'):
-            raise SystemExit('Must download data first')
-
         print('processing ' + phase + ' data')
-        if phase is not 'test':
+        if phase != 'test':
             # Combine Q and A
-            if not os.path.exists('vqa_' + phase + '_combined.json'):
-                print('Combining question and answer...')
-                question = json.load(
-                    open('raw/v2_OpenEnded_mscoco_' + phase + '2014_questions.json'))
-                answers = json.load(open('raw/v2_mscoco_' + phase + '2014_annotations.json'))
-                combine_qa(question, answers['annotations'], phase)
+            print('Combining question and answer...')
+            question = json.load(
+                open('raw/v2_OpenEnded_mscoco_' + phase + '2014_questions.json'))
+            answers = json.load(open('raw/v2_mscoco_' + phase + '2014_annotations.json'))
+            combine_qa(question, answers['annotations'], phase)
 
             # Tokenize
-            if not os.path.exists('vqa_' + phase + '_toked.json'):
-                print('Tokenizing...')
-                t = json.load(open('vqa_' + phase + '_combined.json'))
-                tokenize_questions(t, phase)
+            print('Tokenizing...')
+            t = json.load(open('vqa_' + phase + '_combined.json'))
+            tokenize_questions(t, phase)
         else:
-            if not os.path.exists('vqa_test_toked.json'):
-                print ('Tokenizing...')
-                t = json.load(open('raw/v2_OpenEnded_mscoco_' + phase + '2014_questions.json'))
-                tokenize_questions(t, phase)
+            print ('Tokenizing...')
+            t = json.load(open('raw/v2_OpenEnded_mscoco_' + phase + '2015_questions.json'))
+            t = t['questions']
+            tokenize_questions(t, phase)
 
         # Build dictionary for question and answers
-        if not os.path.exists('vqa_' + phase + '_final_3000.json'):
-            print('Building dictionary...')
-            t = json.load(open('vqa_' + phase + '_toked.json'))
-            if phase is 'train':
-                process_questions(t)
+        print('Building dictionary...')
+        t = json.load(open('vqa_' + phase + '_toked.json'))
+        if phase == 'train':
+            process_questions(t)
+        if phase != 'test':
             process_answers(t, phase, n_answers=args.nanswers)
 
     print('Done')
