@@ -40,7 +40,7 @@ To preprocess the image data and text data the following commands can be execute
 $ python preprocess_image.py --data trainval; python preprocess_text.py --data train
 ```
 ### Pretrained model
-If you would like a pretrained model, one can be found here: [example model](https://drive.google.com/open?id=1HqZ6L-pl0AnFyScloFk-ITI6CuPwEMKk). This model achieved 66.2% accuracy on test.
+If you would like a pretrained model, one can be found here: [example model](https://drive.google.com/file/d/1nBwZIy8SPbV2bqGYYA97uCHnybDqTjRa/view?usp=sharing). This model achieved 66.2% accuracy on test.
 
 
 ### Training
